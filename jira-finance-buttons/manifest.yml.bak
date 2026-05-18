@@ -1,0 +1,34 @@
+modules:
+  jira:issuePanel:
+    - key: finance-approval-actions-panel
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Finance Approval Actions
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+      allowMultiple: false
+      displayConditions:
+        projectKey: FIN
+        issueType: Payment Request
+
+  function:
+    - key: resolver
+      handler: index.handler
+
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+
+permissions:
+  scopes:
+    - read:issue:jira
+    - read:issue.transition:jira
+    - write:issue:jira
+
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/b4eb4af8-80fc-4d2a-ae20-65c5ebc4a302
