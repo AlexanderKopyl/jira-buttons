@@ -378,6 +378,11 @@ const App = () => {
       return <Text>{UNSUPPORTED_MESSAGE}</Text>;
     }
 
+    const unavailableActionMessages = availableActions
+      .map((action) => resolveTransition(state.transitions, action.transitionName))
+      .filter((resolved) => resolved.status !== 'ready')
+      .map((resolved) => resolved.message);
+
     return (
       <Stack space="space.200">
         {state.actionMessage ? (
@@ -386,26 +391,38 @@ const App = () => {
           </SectionMessage>
         ) : null}
         <Stack space="space.100">
-          {availableActions.map((action) => {
-            const resolved = resolveTransition(state.transitions, action.transitionName);
-            const isProcessing = state.processingTransitionName !== null;
-            const isDisabled = isProcessing || resolved.status !== 'ready';
+          <Text>Current status: {statusName}</Text>
+          {/*
+            Inline keeps the Jira workflow actions compact inside the issue panel.
+            Buttons still use the existing action appearances, so primary,
+            secondary, and destructive intent stays tied to the workflow mapping.
+          */}
+          <Inline alignBlock="center" space="space.050" rowSpace="space.050" shouldWrap>
+            {availableActions.map((action) => {
+              const resolved = resolveTransition(state.transitions, action.transitionName);
+              const isProcessing = state.processingTransitionName !== null;
+              const isDisabled = isProcessing || resolved.status !== 'ready';
 
-            return (
-              <Stack key={action.transitionName} space="space.050">
+              return (
                 <Button
+                  key={action.transitionName}
                   appearance={action.appearance}
                   isDisabled={isDisabled}
                   onClick={() => handleTransition(action.transitionName)}
                 >
                   {state.processingTransitionName === action.transitionName ? 'Processing...' : action.label}
                 </Button>
-                {resolved.status !== 'ready' ? (
-                  <Text>{resolved.message}</Text>
-                ) : null}
-              </Stack>
-            );
-          })}
+              );
+            })}
+          </Inline>
+          {unavailableActionMessages.length > 0 ? (
+            <Stack space="space.050">
+              {unavailableActionMessages.map((message) => (
+                <Text key={message}>{message}</Text>
+              ))}
+            </Stack>
+          ) : null}
+          <Text>Actions shown here depend on your Jira workflow permissions.</Text>
         </Stack>
       </Stack>
     );
